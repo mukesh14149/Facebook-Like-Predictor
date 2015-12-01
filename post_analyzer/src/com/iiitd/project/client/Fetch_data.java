@@ -8,10 +8,16 @@ import java.io.InputStream;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.servlet.ServletException;
@@ -41,8 +47,8 @@ import com.restfb.types.User;
 @WebServlet("/Fetch_data")
 public class Fetch_data extends HttpServlet {
 	private static final long serialVersionUID = 1L;
-	public static String APP_ID = "910867505672654";
-	public static String APP_SECRET = "8bbeef0ed5bd3bd7ac978102c08a5132";
+	public static String APP_ID = "758937600918147";
+	public static String APP_SECRET = "127770845824b36aad9f23c3f1139670";
 	  
     /**
      * @see HttpServlet#HttpServlet()
@@ -85,13 +91,13 @@ public class Fetch_data extends HttpServlet {
 		//System.out.println(access_token);
 		
 		
-		final FacebookClient facebookClient = new DefaultFacebookClient(access_token);
+		final FacebookClient facebookClient = new DefaultFacebookClient("CAACEdEose0cBAIjSZB1jcsIJcgwh0gvmZBXIotZC0JRHpz95U3GtS74RDZBQCZC8Fk9ZAX3pyMF3XNmQww87dFBRmZCB3mKxlb8udyEsCqSsJO4Pr4yfPruVZArKxRCxXZBSToEvMbySVzYaipBV4SGli4I2Ju5SiHPF2AMM2Dk19bWBrZAOPGiwKQ40AZCgU3E0R8iX0x2Dvvy0gZDZD");
 		
 		//fetch user  i.e a client  data who logged in with given fields. 
 		User loginUser = facebookClient.fetchObject("me", User.class,Parameter.with("fields","first_name,last_name,name,email,website"));
 		
 		//we need to connect to access another edge
-		Connection<Post> feed=facebookClient.fetchConnection("me/posts", Post.class, Parameter.with("fields","name,story,id,full_picture,picture,likes{name,pic_large},type,created_time,link"),Parameter.with("limit", 300));
+		Connection<Post> feed=facebookClient.fetchConnection("me/posts", Post.class, Parameter.with("fields","name,story,id,full_picture,picture,likes.limit(1000){name,pic_large},type,created_time,link"),Parameter.with("limit", 300));
 		
 		//String aloo="http://graph.facebook.com/"+feed.getData().get(0).getLikes().getData().get(0).getId()+"/picture";
 		//URL url1=new URL(aloo);
@@ -99,8 +105,8 @@ public class Fetch_data extends HttpServlet {
 		//User loginUser1 = facebookClient.fetchObject(feed.getData().get(0).getLikes().getData().get(0).getId(), User.class,Parameter.with("fields","first_name,last_name,name,picture"));
 		//System.out.println(loginUser1.getPicture()+loginUser1.getName());
 		
-	System.out.println(	loginUser.getEmail()
-		+loginUser.getWebsite());
+	//System.out.println(	loginUser.getEmail()
+		//+loginUser.getWebsite());
 		List<Post> posts = feed.getData();
 		//System.out.println(feed.Say you clock has frequency f. Create a counter which counts from 1 to f/2.getData().size());
 		
@@ -109,8 +115,10 @@ public class Fetch_data extends HttpServlet {
 		 HashMap<String,Integer> status_friends = new HashMap<String,Integer>();
 		 HashMap<String,String> name_id = new HashMap<String,String>();
 		List<NamedFacebookType> Likes_Data=null;
-		Connection<Photo>photos =facebookClient.fetchConnection("me/photos/uploaded", Photo.class, Parameter.with("fields","name,picture,link,likes{name,id,pic},created_time"),Parameter.with("limit", 300));
-		
+		Connection<Photo>photos =facebookClient.fetchConnection("me/photos/uploaded", Photo.class, Parameter.with("fields","name,picture,link,likes.limit(1000){name,pic_large},created_time"),Parameter.with("limit", 300),Parameter.with("summary", true));
+		int shared_avg=0,sa=1;
+		int timeline_avg=0,ta=1;
+		int status_avg=0,sta=1;
 	//change according to order of profile pic
 		SimpleDateFormat format = new SimpleDateFormat("yyyy/MM/dd");
 		String date = format.format(new Date());
@@ -120,7 +128,7 @@ public class Fetch_data extends HttpServlet {
 		//System.out.println(posts.get(0).getCreatedTime().toString());
 		int ti=0,post_limit=0;
 		while(true){
-			System.out.println(ti+posts.get(ti).getId());
+			//System.out.println(ti+posts.get(ti).getId());
 			
 		String date2=format.format(posts.get(ti).getCreatedTime());
 		
@@ -156,7 +164,7 @@ public class Fetch_data extends HttpServlet {
 		
 
 		
-		System.out.println(post_limit);
+		//System.out.println(post_limit);
 		int lim=(post_limit*20)/100;
 		
 	//change
@@ -181,6 +189,9 @@ public class Fetch_data extends HttpServlet {
 					if((posts.get(w).getId().equals(posts.get(q).getId())==false)&&posts.get(w).getType().equals("status")){
 						counter++;
 						List<NamedFacebookType> status_likes=posts.get(w).getLikes().getData();
+						//System.out.println(status_likes.size()+"status");
+						sta++;
+						status_avg+=status_likes.size();
 						for(int w1=0;w1<status_likes.size();w1++){
 							int c1=1;
 							
@@ -205,7 +216,7 @@ public class Fetch_data extends HttpServlet {
 				try{
 				if(((posts.get(q).getName().equals("Mobile Uploads"))||posts.get(q).getName().equals("Mukesh's cover photo"))||(posts.get(q).getName().equals("Timeline Photos"))||(posts.get(q).getName().equals("Profile Pictures"))||(posts.get(q).getName().equals(loginUser.getName().toString()))){	
 					
-					//System.out.println(q+"yo"+posts.get(q).getId());
+					
 					for(int q1=0;q1<photos.getData().size();q1++){
 						//System.out.println(q1+"yo"+(photos.getData().size()));
 						String date2=format.format(photos.getData().get(q1).getCreatedTime());
@@ -226,7 +237,15 @@ public class Fetch_data extends HttpServlet {
 								break;
 							if(posts.get(q).getLink().equals(photos.getData().get(q1).getLink())==false){
 									List<NamedFacebookType> timiline_linker=photos.getData().get(q1).getLikes();
-						//			System.out.println(photos.getData().get(q1).getName());
+									//System.out.println(q+"yo"+photos.getData().get(q).getName());
+									System.out.println(photos.getData().get(q1).getId());
+									System.out.println(photos.getData().get(q1).getLikes().size());
+									System.out.println("yoooo");
+									
+									//System.out.println(timiline_linker.size()+"photo"+q);
+									 ta++;
+									 timeline_avg+=timiline_linker.size(); 
+									//			System.out.println(photos.getData().get(q1).getName());
 									for(int j1=0;j1<timiline_linker.size();j1++){
 									int c1=1;
 									
@@ -276,7 +295,10 @@ public class Fetch_data extends HttpServlet {
 								//System.out.println(posts.get(q3));	
 								try{
 									List<NamedFacebookType> shared_linker=posts.get(q3).getLikes().getData();
-									//System.out.println(photos.getData().get(q3).getName());
+									
+									//System.out.println(shared_linker.size()+"shared");
+									sa++;
+									 shared_avg+=shared_linker.size(); 
 									
 									for(int j2=0;j2< shared_linker.size();j2++){
 									int c1=1;
@@ -336,9 +358,43 @@ public class Fetch_data extends HttpServlet {
             float a=(value/counter2)*100;
       //     System.out.println(key + " " + value+" "+ a);  
 	} 
+		 HashMap<String,Integer> special_friends = new HashMap<String,Integer>();
+
+		for(int i=0;i<5;i++){
+			try{
+				List<NamedFacebookType> special=posts.get(i).getLikes().getData();
+				System.out.println(i+"s");
+				System.out.println(posts.get(i).getName());
+				System.out.println(special.size());
+				
+			for(int j2=0;j2< special.size();j2++){
+				int c1=1;
+				if(special_friends.get( special.get(j2).getName())!=null){
+					c1=Integer.parseInt(special_friends.get( special.get(j2).getName()).toString());
+					special_friends.put( special.get(j2).getName(), ++c1);
+				}
+				else{
+					special_friends.put( special.get(j2).getName(), c1);
+				}
+				
+				
+			}}catch(Exception e){}
+		}
+		for (String name: special_friends.keySet()){
+            String key =name.toString();
+            float value =special_friends.get(name);  
+          //  float a=(value/counter2)*100;
+          System.out.println(key+" "+value );  
+	} 
 		
 		
 		
+		System.out.println("avg of shared"+shared_avg+" "+sa+"hs"+shared_avg/sa);
+		System.out.println("avg of timiline"+timeline_avg+" "+ta+"hs"+timeline_avg/ta);
+		System.out.println("avg of status"+status_avg+" "+sta+"hs"+status_avg/sta);
+		shared_avg=shared_avg/sa;
+		timeline_avg=timeline_avg/ta;
+		status_avg=status_avg/sta;
 		
 		JSONObject obj=new JSONObject();
 		JSONArray mainArray =new JSONArray();
@@ -415,10 +471,23 @@ public class Fetch_data extends HttpServlet {
 	
 		HttpSession session=request.getSession();
 
+		//User loginUser1 = facebookClient.fetchObject("603031786473547", User.class,Parameter.with("fields","first_name,last_name,name,email,website"));
+		//System.out.println(loginUser1.getName());
+		
+		session.setAttribute("lim", lim);
+		session.setAttribute("status_avg", status_avg);
+		session.setAttribute("timeline_avg", timeline_avg);
+		session.setAttribute("shared_avg", shared_avg);
 		session.setAttribute("loginUser",loginUser );
 		session.setAttribute("counter",counter );
 		session.setAttribute("counter1",counter1 );
 		session.setAttribute("counter2",counter2 );
+		
+		timeline_friends = sortByValues(timeline_friends); 
+		shared_friends = sortByValues(shared_friends); 
+		status_friends = sortByValues(status_friends); 
+		
+		session.setAttribute("special_friends", special_friends);
 		session.setAttribute("timeline_friends",timeline_friends );
 		session.setAttribute("shared_friends",shared_friends );
 		session.setAttribute("status_friends",status_friends );
@@ -448,4 +517,24 @@ public class Fetch_data extends HttpServlet {
 		}
 		return new String(baos.toByteArray());
 	}
+	
+	private static HashMap sortByValues(HashMap map) { 
+	       List list = new LinkedList(map.entrySet());
+	       // Defined Custom Comparator here
+	       Collections.sort(list, new Comparator() {
+	            public int compare(Object o1, Object o2) {
+	               return ((Comparable) ((Map.Entry) (o2)).getValue())
+	                  .compareTo(((Map.Entry) (o1)).getValue());
+	            }
+	       });
+
+	       // Here I am copying the sorted list in HashMap
+	       // using LinkedHashMap to preserve the insertion order
+	       HashMap sortedHashMap = new LinkedHashMap();
+	       for (Iterator it = list.iterator(); it.hasNext();) {
+	              Map.Entry entry = (Map.Entry) it.next();
+	              sortedHashMap.put(entry.getKey(), entry.getValue());
+	       } 
+	       return sortedHashMap;
+	  }
 }
