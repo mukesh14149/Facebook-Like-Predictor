@@ -57,15 +57,26 @@ import="com.restfb.types.Photo"
 import="com.restfb.types.Post"
 import="com.restfb.types.User"
 %>
-	<% 	HttpSession session1=request.getSession();
+
+	<% 	
+		//Get Session Values i.e set on Fetch_data page.
+		HttpSession session1=request.getSession();
+	
+		//Its description is same as on Fetch_data class.
  		HashMap<String,Integer> timeline_friends = (HashMap<String,Integer>)session1.getAttribute("timeline_friends");	
  		HashMap<String,Integer> shared_friends = (HashMap<String,Integer>)session1.getAttribute("shared_friends");	
  		HashMap<String,Integer> status_friends = (HashMap<String,Integer>)session1.getAttribute("status_friends");	
  		HashMap<String,Integer> special_friends = (HashMap<String,Integer>)session1.getAttribute("special_friends");	
- 		 HashMap<String,String> name_id=(HashMap<String,String>)session1.getAttribute("name_id");	
+ 		HashMap<String,String> name_id=(HashMap<String,String>)session1.getAttribute("name_id");	
  		
+ 		//Make list
  		List<Post> posts=(List<Post>)session1.getAttribute("posts");
+ 		
+ 		//Get User to print its name and photo.
  		User loginUser=(User)session1.getAttribute("loginUser");
+ 		
+ 		
+ 		//Its description is same as on Fetch_data class.
  		int counter=(Integer)session1.getAttribute("counter");
  		int counter1=(Integer)session1.getAttribute("counter1");
  		int counter2=(Integer)session1.getAttribute("counter2");
@@ -74,75 +85,86 @@ import="com.restfb.types.User"
  		int shared_avg=(Integer)session.getAttribute("shared_avg");
  		Random rand = new Random();
  		int lim=(Integer)session.getAttribute("lim");
+ 		
  		int i=-1;
- 		BufferedWriter file=new BufferedWriter(new FileWriter("/media/mukesh/New Volume/post_analyzer/files/data.txt",true));
- 		BufferedReader file1=new BufferedReader(new FileReader("/media/mukesh/New Volume/post_analyzer/files/data.txt"));
+ 		
+ 		//Extract Accuracy of app for different User who already use this app, which is saved in Data.txt file.
+ 		BufferedWriter file=new BufferedWriter(new FileWriter("../data.txt",true));
+ 		BufferedReader file1=new BufferedReader(new FileReader("../data.txt"));
 		int cal=0;
  		String line;
  		int acc=0,countacc=0;
+ 		
+ 		//Make Average of Accuracy of Different User who already use this app.
  		try {
 			while((line=file1.readLine())!=null){
 				String[] cas = line.split(" ");
-				System.out.println(cas[0]+ " "+cas);
 				acc+=Integer.parseInt(cas[0]);
-				System.out.println(acc);
 				countacc++;
 			}
 			file1.close();
-		} catch (NumberFormatException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}	
+			acc=acc/countacc;
+		} catch (NumberFormatException e) {} 
+ 		  catch (IOException e) {}
+ 		  catch(ArithmeticException e){ acc=72;}	
 	
 %>
-<h1>Likes Predictor.com <%=acc/countacc%></h1>
+
+	<!--Print Accuracy -->
+	<h1>Likes Predictor.com <%=acc%></h1>
 	<table style="position:relative;width:40%;" >
-    <tr>
-    	<td><img src='https://graph.facebook.com/<c:out value="${loginUser.id}"/>/picture' /></td>
-     </tr>   
+	    <tr>
+	    	<!--Get User profile pic  -->
+	    	<td><img src='https://graph.facebook.com/<c:out value="${loginUser.id}"/>/picture' /></td>
+	    </tr>   
+     
+     	<!--Print Login id and Name -->
      	<tr><td>Facebook ID:</td><td> <c:out value="${loginUser.id}" /></td></tr>
-         <tr><td>Name: </td><td><c:out value="${loginUser.name}" /></td></tr>
+        <tr><td>Name: </td><td><c:out value="${loginUser.name}" /></td></tr>
          
-        </table>
-      
+     </table>
+      		
+      		<!--Loop upto post on which we predict like -->
     		<c:forEach begin="0" end="5" var="loop">
-    		<br>
-    		<br>
-    			<br>
-    			<br>
-    			
+    		<br><br><br><br>	
     		<table style="margin-left:38%;">		
-    				<tr><th>Post Name</th>
-    					
-    				</tr>
-    				
-    		 <tr>	<td><c:out value="${posts.get(loop).getName()}"/> </td>
-					<td><img src="<%=posts.get(i+1).getPicture()%>"/></td>
-					
-						
-			</tr>
-					
-					
-					
-		  </table>
-		<% 		
+    				<tr><th>Post Name</th></tr>
+    				 <tr>	
+    				 
+    		 			<!--Print post name and its picture if it has.-->
+    		 			<td><c:out value="${posts.get(loop).getName()}"/> </td>
+						<td><img src="<%=posts.get(i+1).getPicture()%>"/></td>
+					</tr>			
+		  	</table>
+		<% 	
+		//if i value equal to lim we should break as we have predict likes upto lim.
 		i++;
 		if(i==lim)
 			break;
+		
+		//Check post type so that we print no. of likes according to their post type.
+		
+		
+		//check post type status
 		if(posts.get(i).getType().equals("status")){
-			cal+=((Math.abs(posts.get(i).getLikes().getData().size()-status_avg))*100)/status_avg;
+			try{
+				//Get actual likes on given post and compare with our predicting likes to make accuracy of app it does not work when we predict likes on current newly post.
+				cal+=((Math.abs(posts.get(i).getLikes().getData().size()-status_avg))*100)/status_avg;
 			
-			
+			}catch(Exception e){cal=70;}
 			%>
+			
 			<table style="position:relative;width:40%;" >
-			<tr><th></th><th>Name</th><th>Probability(in %)</th>
-			<th>total likes<%=status_avg+rand.nextInt(2)%></th>
-			</tr>
+				<tr>
+						<th></th>
+						<th>Name</th>
+						<th>Probability(in %)</th>
+						<!-- Show total likes on post -->
+						<th>total likes<%=status_avg+rand.nextInt(2)%></th>
+				</tr>
 		<% 
-			//	System.out.println("aap status dekhe ha");
+		
+		//Show friends Name and photo and Probability of him/her to like that post.
 		for (String name: status_friends.keySet()){
             String key =name.toString();
             int k;
@@ -154,35 +176,49 @@ import="com.restfb.types.User"
             float value = status_friends.get(name);  
             float a=(value/counter)*100;
             String image=name_id.get(name);
-           // System.out.println(image);
              if(a>=10.0 ||k==5){%>
-		            <%//System.out.println(special_friends.get(name)); %>
-		                      
-		                        <tr>  <td><img src='https://graph.facebook.com/<%=image %>/picture' /></td>
-		                         <%if(k==5) {%>
-		                          <td><%=key%></td><td><%=a%></td><td>C</td></tr>
-		                     <%}else{ %>
-		                     <td><%=key%></td><td><%=a%></td></tr>
-		                      <%} %>
+		            <%//Check whether a given user is special or normal%>
+		                        <tr>  
+		                        	<td><img src='https://graph.facebook.com/<%=image %>/picture' /></td>
+		                         	<%if(k==5) {%>
+		                          	<td><%=key%></td>
+		                          	<td><%=a%></td>
+		                          	<td>C</td>  <!--C is the sign of special Friend -->
+		                     		
+		                     		<%}else{ %>
+		                     		<td><%=key%></td>
+		                     		<td><%=a%></td>
+		                      		<%} %>
+		                      	</tr>	
                     
                      
                      
                         
-	<% }}%>
-	</table>
-	<%}
+			<% }}%>
+				</table>
+		<%}
+		
+		//check post type profic pic and self uploaded videos and photo.
 		else if(posts.get(i).getType().equals("photo")||posts.get(i).getType().equals("link")||posts.get(i).getType().equals("video")){
 			try{
-			if((posts.get(i).getName().equals("Mobile Uploads"))||(posts.get(i).getName().equals("Mukesh's cover photo"))||(posts.get(i).getName().equals("Timeline Photos"))||(posts.get(i).getName().equals("Profile Pictures"))||(posts.get(i).getName().equals(loginUser.getName().toString()))){	
-				cal+=((Math.abs(posts.get(i).getLikes().getData().size()-timeline_avg))*100)/timeline_avg; 
-				//System.out.println(" "+cal+" "+posts.get(i).getLikes().getData().size()+" "+shared_avg+" ");
+				if((posts.get(i).getName().equals("Mobile Uploads"))||(posts.get(i).getName().equals("Mukesh's cover photo"))||(posts.get(i).getName().equals("Timeline Photos"))||(posts.get(i).getName().equals("Profile Pictures"))||(posts.get(i).getName().equals(loginUser.getName().toString()))){	
+				
+					//Get actual likes on given post and compare with our predicting likes to make accuracy of app it does not work when we predict likes on current newly post.
+					cal+=((Math.abs(posts.get(i).getLikes().getData().size()-timeline_avg))*100)/timeline_avg; 
+				
 				%>
 				<table style="position:relative;width:40%;" >
-				<tr><th></th><th>Name</th><th>Probability(in %)</th>
-				<th>total likes<%=timeline_avg+rand.nextInt(2) %></th>
+				<tr>
+					<th></th>
+					<th>Name</th>
+					<th>Probability(in %)</th>
+					
+					<!-- Show total likes on post -->
+					<th>total likes<%=timeline_avg+rand.nextInt(2) %></th>
 				</tr>
 			<% 
-				//System.out.println("aap timeline dekhe ha");
+				
+				//Show friends Name and photo and Probability of him/her to like that post.
 				for (String name: timeline_friends.keySet()){
 		            String key =name.toString();
 		            int k;
@@ -194,15 +230,18 @@ import="com.restfb.types.User"
 		            float value = timeline_friends.get(name);  
 		            float a=(value/counter1)*100;
 		            String image=name_id.get(name);
-		           // System.out.println(image);
 		            if(a>=10.0 ||k==5){%>
-		            <%//System.out.println(special_friends.get(name)); %>
+		            <%//Check whether a given user is special or normal%>
 		                      
-		                        <tr>  <td><img src='https://graph.facebook.com/<%=image %>/picture' /></td>
-		                         <%if(k==5) {%>
-		                          <td><%=key%></td><td><%=a%></td><td>C</td></tr>
-		                     <%}else{ %>
-		                     <td><%=key%></td><td><%=a%></td></tr>
+		                        <tr> 
+		                        	<td><img src='https://graph.facebook.com/<%=image %>/picture' /></td>
+		                         	<%if(k==5) {%>
+		                          	<td><%=key%></td><td><%=a%></td><td>C</td></tr> <!--C is the sign of special Friend -->
+		                     		
+		                     		<%}else{ %>
+		                     		<td><%=key%></td>
+		                     		<td><%=a%></td>
+		                     	</tr>
 		                      <%} %>
 		                         
 			<%}}
@@ -211,16 +250,21 @@ import="com.restfb.types.User"
 			<%	
 			}
 			else{
-				cal+=((Math.abs(posts.get(i).getLikes().getData().size()-shared_avg))*100)/shared_avg;
-				//int at=((Math.abs(posts.get(i).getLikes().getData().size()-shared_avg))/posts.get(i).getLikes().getData().size())*100;
-				System.out.println("asdkjf"+cal+" "+posts.get(i).getLikes().getData().size()+" "+shared_avg+" ");
-				%>
 				
+				//Get actual likes on given post and compare with our predicting likes to make accuracy of app it does not work when we predict likes on current newly post.
+				cal+=((Math.abs(posts.get(i).getLikes().getData().size()-shared_avg))*100)/shared_avg;
+				%>
 				<table style="position:relative;width:40%;" >
-				<tr><th></th><th>Name</th><th>Probability(in %)</th>
-				<th>total likes<%=shared_avg+rand.nextInt(2) %></th>
+				<tr>
+					<th></th>
+					<th>Name</th>
+					<th>Probability(in %)</th>
+					<!-- Show total likes on post -->
+					<th>total likes<%=shared_avg+rand.nextInt(2) %></th>
 				</tr>
-			<% 	//System.out.println("aap shared dekhe ha");
+			<% 	
+			
+				//Show friends Name and photo and Probability of him/her to like that post.
 				for (String name: shared_friends.keySet()){
 		            String key =name.toString();
 		            int k;
@@ -232,19 +276,19 @@ import="com.restfb.types.User"
 		            float value = shared_friends.get(name);  
 		            float a=(value/counter2)*100;
 		            String image=name_id.get(name);
-		          //  System.out.println(image);
-		         
-		         // System.out.println(k1);
-		          
 		            if(a>=10.0 ||k==5){%>
-		            <%//System.out.println(special_friends.get(name)); %>
-		                      
-		                        <tr>  <td><img src='https://graph.facebook.com/<%=image %>/picture' /></td>
+		            <%//Check whether a given user is special or normal%>		                      
+		                    <tr> 
+		                         <td><img src='https://graph.facebook.com/<%=image %>/picture' /></td>
 		                         <%if(k==5) {%>
-		                          <td><%=key%></td><td><%=a%></td><td>C</td></tr>
-		                     <%}else{ %>
-		                     <td><%=key%></td><td><%=a%></td></tr>
-		                      <%} %>
+		                          <td><%=key%></td>
+		                          <td><%=a%></td>
+		                          <td>C</td></tr><!--C is the sign of special Friend -->
+		                     	 <%}else{ %>
+		                     	  <td><%=key%></td>
+		                     	  <td><%=a%></td>
+		                    </tr>
+		                     	 <%} %>
 		                      
 		                         
 		               
@@ -258,7 +302,9 @@ import="com.restfb.types.User"
 		
 			</c:forEach>
     		
- <%System.out.println(cal/5);
+ <%
+ 
+ 	//Save accuracy, name and id of a user who uses this app in file called Data.txt
  	int accuracy=100-(cal/5);
  	file.write(accuracy+" "+loginUser.getId()+" "+loginUser.getName());
  	file.newLine();

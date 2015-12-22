@@ -18,7 +18,7 @@ Features of this:
 3. Show Post name and picture on which had predict likes.
 2. Shows friend's name and Picture who would going to like your post.
 3. Shows friend who must like your post with "C" Sign on front of thier name
-4. Show App Accuracy by analyzing previous user who used this app.
+4. Show App Accuracy(At top left corner of webapp) by analyzing previous user who used this app.
 
 
 Prediction Approach:
@@ -64,5 +64,10 @@ Lets have a fun at https://developers.facebook.com/tools/explorer
 Help:
 -----
 1. Create an issue or direclty contact me by going www.mukeshgupta.me.
+
+
+SreenShots:
+-----------
+Webapp Screenshots available in Screenshots folder.
 
 

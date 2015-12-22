@@ -8,9 +8,8 @@
 	</classpathentry>
 	<classpathentry kind="con" path="org.eclipse.jst.j2ee.internal.web.container"/>
 	<classpathentry kind="con" path="org.eclipse.jst.j2ee.internal.module.container"/>
-	<classpathentry kind="lib" path="/media/mukesh/New Volume/Lab9/WebContent/WEB-INF/lib/json-simple-1.1.1.jar"/>
-	<classpathentry kind="lib" path="/home/mukesh/Downloads/Downloads/restfb-1.16.0/restfb-1.16.0.jar"/>
-	<classpathentry kind="lib" path="/home/mukesh/Downloads/Downloads/apache-tomcat-7.0.64/lib/servlet-api.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/servlet.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/restfb-1.17.0.jar"/>
 	<classpathentry kind="output" path="build/classes"/>
 </classpath>
